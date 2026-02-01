@@ -1,0 +1,15 @@
+name: Choose Issue Type
+description: Select the type of issue you want to report
+title: "[ISSUE] "
+labels: ["needs-triage"]
+assignees: []
+
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to contribute! Please select the most appropriate issue type:
+        - **Bug Report**: Report unexpected behavior or crashes
+        - **Feature Request**: Suggest a new feature or improvement
+        - **Help / Question**: Ask for help using the project
+        - **Security**: Report security vulnerabilities (privately!)
