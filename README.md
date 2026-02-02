@@ -1,6 +1,6 @@
 # Time Machine Samba Server
 
-Docker-based Samba server optimized for macOS Time Machine backups. Provides a reliable and secure Time Machine destination for local network backups.
+A simple Docker-based Samba server optimized for macOS Time Machine backups. Provides a reliable and secure Time Machine destination for local network backups.
 
 ![GitHub release (latest by date)](https://img.shields.io/github/v/release/4lbertojordan/timemachine?style=flat-square&logo=github&color=blue)
 ![GitHub last commit](https://img.shields.io/github/last-commit/4lbertojordan/timemachine?style=flat-square)
@@ -38,7 +38,7 @@ Create `.env.timemachine` in your repository root:
 
 ```dotenv
 # Samba user and password
-SMB_USER=backup_user
+SMB_USER=backup_user_here
 SMB_PASSWORD=your_secure_password_here
 SMB_UID=1000
 SMB_GROUP=home
@@ -101,65 +101,11 @@ The server configuration is defined in [timemachine/smb_timemachine.conf](timema
 
 **Network Security:**
 
-The server accepts connections only from:
+I recommend allowing only trusted networks:
 
 - `127.0.0.1` (localhost)
-- `192.168.153.0/24` (local network example - adjust to your network)
+- `192.168.XXX.0/24` (local network example - adjust to your network)
 - `10.8.0.0/24` (VPN network example - adjust to your VPN)
-
-To allow different networks, edit `smb_timemachine.conf`:
-
-```conf
-[global]
-    hosts allow = 127.0.0.1 YOUR_NETWORK/24 YOUR_VPN_NETWORK/24
-    hosts deny = ALL
-```
-
-## Docker Compose Usage
-
-### Start the Server
-
-```bash
-docker compose -p timemachine -f docker-compose.yml up -d
-```
-
-### Stop the Server
-
-```bash
-docker compose -p timemachine -f docker-compose.yml down
-```
-
-### View Logs
-
-```bash
-docker compose -p timemachine -f docker-compose.yml logs -f
-```
-
-### Example docker-compose.yml
-
-```yaml
-services:
-  timemachine:
-    build:
-      context: .
-      dockerfile: timemachine.dockerfile
-    container_name: timemachine
-    restart: always
-    env_file:
-      - .env.timemachine
-    ports:
-      - "445:445"
-    environment:
-      - TZ=Europe/Madrid
-    volumes:
-      - ./timemachine/smb_timemachine.conf:/etc/samba/smb.conf:ro
-      - ./timemachine/logs/log_tm:/var/log/samba
-      - ./timemachine/:/timemachine
-    deploy:
-      resources:
-        limits:
-          memory: 1024M
-```
 
 ## Troubleshooting
 
@@ -190,12 +136,6 @@ Ensure credentials match `.env.timemachine`:
 - Username must match `SMB_USER`
 - Password must match `SMB_PASSWORD`
 
-**Reset user password:**
-
-```bash
-docker exec timemachine smbpasswd -a SMB_USER
-```
-
 ### Slow Backups
 
 - Check network connection (use wired ethernet if possible)
@@ -208,116 +148,10 @@ docker exec timemachine smbpasswd -a SMB_USER
 Ensure the timemachine directory has proper permissions:
 
 ```bash
-# macOS host
+# linux host
 ls -la ./timemachine/
 # Should be owned by the user running Docker
 ```
-
-## Network Recommendations
-
-### Local Network Only (Most Secure)
-
-Allow only your local network:
-
-```conf
-hosts allow = 127.0.0.1 192.168.1.0/24
-hosts deny = ALL
-```
-
-### Add VPN Access
-
-For remote access through VPN:
-
-```conf
-hosts allow = 127.0.0.1 192.168.1.0/24 10.8.0.0/24
-hosts deny = ALL
-```
-
-### Do NOT Expose Directly to Internet
-
-Time Machine shares should **never** be directly accessible from the internet. Always use:
-
-- VPN for remote backups
-- Firewall rules to limit access
-- Local network only for best performance
-
-## File Structure
-
-```
-.
-├── docker-compose.yml           # Docker Compose configuration
-├── timemachine.dockerfile       # Container image definition
-├── entrypoint.sh                # Startup script
-├── .env.timemachine            # Environment variables (not in git)
-├── env.timemachine-example.txt  # Example environment variables
-├── README.md                    # This file
-├── CONTRIBUTING.md              # Contribution guidelines
-├── SECURITY.md                  # Security policy
-├── LICENSE                      # MIT License
-└── timemachine/
-    ├── smb_timemachine.conf     # Samba server configuration
-    ├── logs/                    # Samba logs directory
-    │   └── log_tm               # Time Machine share logs
-    └── conf/                    # Additional configuration directory
-```
-
-## Performance Tuning
-
-### Backup Speed
-
-For faster backups, ensure:
-
-1. **Wired Connection**: Use Ethernet for best performance
-2. **Disk Speed**: Use SSD for backups (faster than HDD)
-3. **Network Bandwidth**: 1Gbps or faster recommended
-4. **Container Memory**: Increase limit if needed
-
-```yaml
-deploy:
-  resources:
-    limits:
-      memory: 2048M # Increase from 1024M if needed
-```
-
-### Backup Size Limit
-
-Edit `timemachine/smb_timemachine.conf` to change maximum backup size:
-
-```conf
-[TimeMachine]
-    # Default: 850GB
-    fruit:time machine max size = 1000000  # 1TB in MB
-```
-
-Remove the line entirely to use all available disk space.
-
-## Security Considerations
-
-### Best Practices
-
-1. **Use Strong Passwords**: Minimum 12 characters, mixed case, numbers, symbols
-2. **Restrict Network Access**: Limit `hosts allow` to trusted networks only
-3. **VPN for Remote Access**: Never expose Samba directly to the internet
-4. **Regular Updates**: Keep Docker image and host OS updated
-5. **Monitor Logs**: Regularly check backup logs for errors
-
-### Network Security
-
-The server configuration restricts access by default:
-
-```conf
-hosts allow = 127.0.0.1 192.168.153.0/24 10.8.0.0/24
-hosts deny = ALL
-```
-
-All other connections are rejected. Adjust these rules for your network.
-
-### Data Protection
-
-- Backups are stored in `/timemachine` volume
-- Ensure proper file permissions on host
-- Consider using encrypted storage volumes
-- Implement regular backups of backups (backup rotation)
 
 ## macOS Exclusions
 
@@ -327,15 +161,11 @@ You can exclude folders from Time Machine backups:
 2. Click **Options**
 3. Add folders to exclude list
 
-Commonly excluded:
-
-- Temporary files and caches
-- Downloads folder (optional)
-- Development build artifacts
-
 ## Monitoring Backups
 
 ### Check Backup Status on macOS
+
+NOTE: I detect that `tmutil` commands may require some time to reflect any information.
 
 ```bash
 # Show latest backup
@@ -347,26 +177,6 @@ tmutil listbackups
 # Check backup size
 tmutil calculatedrift
 ```
-
-### Monitor Server Logs
-
-```bash
-# Real-time logs
-docker logs -f timemachine
-
-# Specific log file
-docker exec timemachine tail -f /var/log/samba/log.tm
-```
-
-## Backup Retention
-
-Time Machine automatically manages backup retention:
-
-- **Hourly backups**: Kept for 24 hours
-- **Daily backups**: Kept for 1 month
-- **Weekly backups**: Kept for all remaining backup size
-
-Once the volume is full, oldest backups are deleted automatically.
 
 ## Contributing
 

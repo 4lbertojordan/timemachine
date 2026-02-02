@@ -29,7 +29,7 @@ jobs:
         run: |
           IMAGE_TAG="1.0.${{ github.run_number }}"
           echo "VERSION=$IMAGE_TAG" >> $GITHUB_OUTPUT
-          echo "::notice::Container image will be: DOCKER_USER/IMAGE:$IMAGE_TAG"
+          echo "::notice::Container image will be: jord4ncodes/timemachine:${IMAGE_TAG}"
 
       - name: Detect Secrets
         uses: gitleaks/gitleaks-action@v2
@@ -55,12 +55,12 @@ jobs:
           file: ./smb.dockerfile
           load: true
           push: false
-          tags: DOCKER_USER/IMAGE:${{ steps.vars.outputs.VERSION }}
+          tags: jord4ncodes/timemachine:${{ steps.vars.outputs.VERSION }}
 
       - name: Run Trivy Scanner
         uses: aquasecurity/trivy-action@master
         with:
-          image-ref: "DOCKER_USER/IMAGE:${{ steps.vars.outputs.VERSION }}"
+          image-ref: "jord4ncodes/timemachine:${{ steps.vars.outputs.VERSION }}"
           format: "table"
           exit-code: "1"
           ignore-unfixed: true
@@ -71,7 +71,7 @@ jobs:
       - name: Publish Trivy Report
         run: |
           echo "## 🛡️ Trivy Security Report" >> $GITHUB_STEP_SUMMARY
-          echo "### Image: DOCKER_USER/IMAGE:${{ steps.vars.outputs.VERSION }}" >> $GITHUB_STEP_SUMMARY
+          echo "### Image: jord4ncodes/timemachine:${{ steps.vars.outputs.VERSION }}" >> $GITHUB_STEP_SUMMARY
           echo '```' >> $GITHUB_STEP_SUMMARY
           cat trivy-results.txt >> $GITHUB_STEP_SUMMARY
           echo '```' >> $GITHUB_STEP_SUMMARY
@@ -84,8 +84,8 @@ jobs:
           platforms: linux/amd64,linux/arm64
           push: true
           tags: |
-            DOCKER_USER/IMAGE:${{ steps.vars.outputs.VERSION }}
-            DOCKER_USER/IMAGE:latest
+            jord4ncodes/timemachine:${{ steps.vars.outputs.VERSION }}
+            jord4ncodes/timemachine:latest
 
       - name: Create Release
         uses: actions/create-release@v1
@@ -97,7 +97,7 @@ jobs:
           body: |
             ✅ Security Scan Passed
             Build: #${{ github.run_number }}.
-            Image: DOCKER_USER/IMAGE:${{ steps.vars.outputs.VERSION }}
+            Image: jord4ncodes/timemachine:${{ steps.vars.outputs.VERSION }}
           draft: false
           prerelease: false
 
@@ -105,8 +105,8 @@ jobs:
         if: always()
         run: |
           echo "Deleting local images..."
-          docker rmi DOCKER_USER/IMAGE:${{ steps.vars.outputs.VERSION }} || true
-          docker rmi DOCKER_USER/IMAGE:latest || true
+          docker rmi jord4ncodes/timemachine:${{ steps.vars.outputs.VERSION }} || true
+          docker rmi jord4ncodes/timemachine:latest || true
           docker builder prune -f
           docker image prune -f
           echo "Container images cleaned up."

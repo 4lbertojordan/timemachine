@@ -1,8 +1,6 @@
 services:
   timemachine:
-    build:
-      context: .
-      dockerfile: timemachine.dockerfile
+    image: jord4ncodes/timemachine:latest
     container_name: timemachine
     restart: always
     env_file:

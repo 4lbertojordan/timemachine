@@ -7,7 +7,7 @@ if [ -n "$TZ" ]; then
 fi
 
 # Get user and group configuration from environment
-USER_NAME=${SMB_USER:-jordan}
+USER_NAME=${SMB_USER:-jordancodes}
 USER_UID=${SMB_UID:-1000}
 GROUP_NAME=${SMB_GROUP:-home}
 GROUP_GID=${SMB_GID:-1000}

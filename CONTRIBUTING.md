@@ -12,7 +12,7 @@ Be respectful and constructive in all interactions. We are committed to maintain
 
 If you find a bug or have a feature request, please open an issue using the appropriate template:
 
-1. Go to the [Issues](https://github.com/OWNER/REPO/issues) tab
+1. Go to the [Issues](https://github.com/4lbertojordan/timemachine/issues) tab
 2. Click "New Issue"
 3. Select the appropriate template (Bug Report, Feature Request, or General Question)
 4. Fill in all relevant information
@@ -23,7 +23,7 @@ If you find a bug or have a feature request, please open an issue using the appr
 1. **Fork the repository** and create a branch from `main`
 
    ```bash
-   git clone https://github.com/OWNER/REPO
+   git clone https://github.com/4lbertojordan/timemachine
    cd REPO
    git checkout -b feature/your-feature-name
    ```
@@ -95,7 +95,7 @@ If you discover a security vulnerability, please email the maintainer directly i
 
 ## Questions?
 
-- Check existing [issues](https://github.com/OWNER/REPO/issues)
+- Check existing [issues](https://github.com/4lbertojordan/timemachine/issues)
 - Review the [README.md](README.md) for usage documentation
 - Open a general question issue if needed
 
