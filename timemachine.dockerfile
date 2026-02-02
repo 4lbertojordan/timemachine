@@ -7,24 +7,29 @@ RUN apt-get update && \
     samba \
     samba-common-bin \
     smbclient \
+    avahi-daemon \
+    avahi-utils \
+    dbus \
     tini \
     iproute2 \
+    procps \
     tzdata && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
 RUN mkdir -p /var/log/samba /var/run/samba /var/lib/samba
 
-COPY entrypoint.sh /entrypoint.sh
-RUN chmod +x /entrypoint.sh
+COPY entrypoint-timemachine.sh /entrypoint-timemachine.sh
+RUN chmod +x /entrypoint-timemachine.sh
 
-EXPOSE 445
+EXPOSE 445/tcp
+EXPOSE 5353/udp
 
 VOLUME ["/etc/samba", "/var/lib/samba", "/var/log/samba"]
 
 HEALTHCHECK --interval=30s --timeout=10s --retries=3 \
     CMD smbstatus > /dev/null || exit 1
 
-ENTRYPOINT ["/entrypoint.sh", "/usr/bin/tini", "--"]
+ENTRYPOINT ["/entrypoint-timemachine.sh", "/usr/bin/tini", "--"]
 
 CMD ["smbd", "-F", "--no-process-group", "--debug-stdout"]

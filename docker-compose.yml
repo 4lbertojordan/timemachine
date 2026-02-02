@@ -5,10 +5,11 @@ services:
     restart: always
     env_file:
       - .env.timemachine
-    ports:
-      - "445:445"
+    cap_add:
+      - NET_ADMIN
     environment:
       - TZ=Europe/Madrid
+      - AVAHI_HOSTNAME=timemachine
     volumes:
       - ./timemachine/smb_timemachine.conf:/etc/samba/smb.conf:ro
       - ./timemachine/logs/log_tm:/var/log/samba

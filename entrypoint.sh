@@ -1,58 +1,77 @@
 #!/bin/bash
 set -e
 
-# Set timezone if provided
-if [ -n "$TZ" ]; then
-    ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
-fi
+[ -n "$TZ" ] && ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
 
-# Get user and group configuration from environment
-USER_NAME=${SMB_USER:-jordancodes}
+USER_NAME=${SMB_USER:-jordan}
 USER_UID=${SMB_UID:-1000}
 GROUP_NAME=${SMB_GROUP:-home}
 GROUP_GID=${SMB_GID:-1000}
 
-# Create group if it doesn't exist
-if ! getent group "$GROUP_NAME" >/dev/null; then
-    echo "Creating group: $GROUP_NAME ($GROUP_GID)"
-    groupadd -g "$GROUP_GID" "$GROUP_NAME"
-fi
+getent group "$GROUP_NAME" >/dev/null || groupadd -g "$GROUP_GID" "$GROUP_NAME"
+id -u "$USER_NAME" >/dev/null 2>&1 || useradd -u "$USER_UID" -g "$GROUP_GID" -M -s /sbin/nologin "$USER_NAME"
 
-# Create system user if it doesn't exist
-if ! id -u "$USER_NAME" >/dev/null 2>&1; then
-    echo "Creating system user: $USER_NAME ($USER_UID)"
-    useradd -u "$USER_UID" -g "$GROUP_GID" -M -s /sbin/nologin "$USER_NAME"
-fi
-
-# Verify Samba directory structure
-echo "Verifying Samba directory structure..."
-mkdir -p /var/lib/samba/private
-mkdir -p /var/log/samba
-mkdir -p /var/run/samba
-
-# Set proper permissions for private directory
+mkdir -p /var/lib/samba/private /var/log/samba /var/run/samba
 chmod 700 /var/lib/samba/private
 
-# Configure Samba user password if provided
-if [ -n "$SMB_PASSWORD" ]; then
-    # Check if user database exists
-    if ! pdbedit -L >/dev/null 2>&1; then
-        echo "New or corrupted user database. Initializing..."
-    fi
 
-    # Create or update user
+if [ -n "$SMB_PASSWORD" ]; then
     if ! pdbedit -L | grep -q "^$USER_NAME:"; then
-        echo "Initializing Samba user: $USER_NAME"
         (echo "$SMB_PASSWORD"; echo "$SMB_PASSWORD") | smbpasswd -a -s "$USER_NAME"
     else
-        echo "Updating password for: $USER_NAME"
         (echo "$SMB_PASSWORD"; echo "$SMB_PASSWORD") | smbpasswd -s "$USER_NAME"
     fi
-    
-    # Enable the user account
     smbpasswd -e "$USER_NAME"
 fi
 
-# Start Samba
-echo "Starting Samba..."
+
+if command -v avahi-daemon >/dev/null 2>&1; then
+    mkdir -p /var/run/dbus /var/run/avahi-daemon /etc/avahi/services
+    
+    rm -f /var/run/dbus/pid
+    dbus-daemon --system --fork 2>/dev/null || true
+    sleep 1
+    
+    cat > /etc/avahi/avahi-daemon.conf <<EOF
+[server]
+host-name=timemachine
+domain-name=local
+use-ipv4=yes
+use-ipv6=no
+deny-interfaces=docker0,lo
+allow-point-to-point=yes
+
+[publish]
+publish-addresses=yes
+publish-workstation=yes
+
+[reflector]
+enable-reflector=yes
+reflect-ipv=yes
+EOF
+
+    cat > /etc/avahi/services/timemachine.service <<EOF
+<?xml version="1.0" standalone='no'?>
+<!DOCTYPE service-group SYSTEM "avahi-service.dtd">
+<service-group>
+  <name>TimeMachine</name>
+  <service>
+    <type>_smb._tcp</type>
+    <port>445</port>
+  </service>
+  <service>
+    <type>_adisk._tcp</type>
+    <port>9</port>
+    <txt-record>dk0=adVN=TimeMachine,adVF=0x82</txt-record>
+    <txt-record>sys=waMA=0,adVF=0x100</txt-record>
+  </service>
+</service-group>
+EOF
+
+    if avahi-daemon --daemonize --no-chroot 2>/dev/null; then
+        sleep 1
+        pgrep -x avahi-daemon >/dev/null && echo "✓ Avahi iniciado" || echo "⚠ Avahi falló"
+    fi
+fi
+
 exec "$@"
