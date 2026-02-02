@@ -63,7 +63,7 @@ docker compose -p timemachine -f docker-compose.yml up -d
 
 ### 3. Configure Time Machine on macOS
 
-Automatically discover the Time Machine share using Avahi (Bonjour):
+This Time Machine share is automatically discovered using Avahi (Bonjour) if not please follow these steps:
 
 1. Open your terminal and run:
 
