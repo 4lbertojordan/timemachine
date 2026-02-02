@@ -1,0 +1,21 @@
+services:
+  timemachine:
+    build:
+      context: .
+      dockerfile: timemachine.dockerfile
+    container_name: timemachine
+    restart: always
+    env_file:
+      - .env.timemachine
+    ports:
+      - "445:445"
+    environment:
+      - TZ=Europe/Madrid
+    volumes:
+      - ./timemachine/smb_timemachine.conf:/etc/samba/smb.conf:ro
+      - ./timemachine/logs/log_tm:/var/log/samba
+      - ./timemachine:/timemachine
+    deploy:
+      resources:
+        limits:
+          memory: 1024M
