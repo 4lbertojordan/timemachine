@@ -38,7 +38,7 @@ Time Machine backups are compatible with MacOS:
 
 ### 1. Create Environment File and Set Permissions
 
-Create `.env.timemachine` in your repository root:
+Create `.env.timemachine` in your repository root: (You can copy from variables_file_example.txt in this repo)
 
 ```dotenv
 # Samba user and password
@@ -66,6 +66,10 @@ docker compose -p timemachine -f docker-compose.yml up -d
 ```
 
 ### 3. Configure Time Machine on macOS
+
+![Time Machine Settings](./docs/images/jord4ncodes-timemachine-1.png)
+
+![Time Machine Select Disk](./docs/images/jord4ncodes-timemachine-2.png)
 
 This Time Machine share is automatically discovered using Avahi (Bonjour) if not please follow these steps:
 
