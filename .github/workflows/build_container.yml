@@ -52,7 +52,7 @@ jobs:
         uses: docker/build-push-action@v5
         with:
           context: .
-          file: ./smb.dockerfile
+          file: ./timemachine.dockerfile
           load: true
           push: false
           tags: jord4ncodes/timemachine:${{ steps.vars.outputs.VERSION }}
