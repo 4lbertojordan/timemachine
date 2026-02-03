@@ -8,6 +8,10 @@ A simple Docker-based Samba server optimized for macOS Time Machine backups. Pro
 ![GitHub issues](https://img.shields.io/github/issues/4lbertojordan/timemachine?style=flat-square)
 ![GitHub License](https://img.shields.io/github/license/4lbertojordan/timemachine?style=flat-square)
 
+![Docker Image Version](https://img.shields.io/docker/v/jord4ncodes/timemachine?sort=semver&style=flat-square&logo=docker)
+![Docker Pulls](https://img.shields.io/docker/pulls/jord4ncodes/timemachine?style=flat-square&logo=docker)
+![Docker Image Size](https://img.shields.io/docker/image-size/jord4ncodes/timemachine/latest?style=flat-square&logo=docker)
+
 ## Features
 
 - Debian-based lightweight image
